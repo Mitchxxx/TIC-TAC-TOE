@@ -40,3 +40,16 @@ jobs:
       - name: Image scan
         run: trivy image ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest >trivyimage.txt
 
+  deploy:
+    needs: build-analyze-scan
+    runs-on: [Eks githubactions-eks]
+    steps:
+      - name: docker pull image
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
+
+      - name: Image scan
+        run: trivy image scan ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest > trivyimagedeploy.txt
+
+      - name: Deploy to container
+        run: dcker run -d --name game -p 3000:3000 ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
+
