@@ -1,0 +1,54 @@
+name: Build, Analyse, Scan
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  build-analyze-scan:
+    name: Build, Analyse, Scan
+    runs-on: [Eks githubactions-eks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      
+      - name: Build and analyze with Sonarqube
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: npm install dependency
+        run: npm install
+
+      - name: Trivy file scan
+        run: trivy fs . > trivyfs.txt
+
+      - name: Docker Build and push
+        run: | 
+          docker build -t tic-tac-toe .
+          docker tag tic-tac-toe ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
+        env:
+          DOCKERHUB_CLI_ACI: 1
+
+      - name: Image scan
+        run: trivy image ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest >trivyimage.txt
+
+  deploy:
+    needs: build-analyze-scan
+    runs-on: [Eks githubactions-eks]
+    steps:
+      - name: docker pull image
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
+
+      - name: Image scan
+        run: trivy image scan ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest > trivyimagedeploy.txt
+
+      - name: Deploy to container
+        run: dcker run -d --name game -p 3000:3000 ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
