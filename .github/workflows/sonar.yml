@@ -31,12 +31,12 @@ jobs:
       - name: Docker Build and push
         run: | 
           docker build -t tic-tac-toe .
-          docker tag tic-tac-toe ${{ secrets.DOCKER_USERNAME }}/tic-tac-toe:latest
-          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/tic-tac-toe:latest
+          docker tag tic-tac-toe ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
         env:
-          DOCKER_CLI_ACI: 1
+          DOCKERHUB_CLI_ACI: 1
 
       - name: Image scan
-        run: trivy image ${{ secrets.DOCKER_USERNAME }}/tic-tac-toe:latest >trivyimage.txt
+        run: trivy image ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest >trivyimage.txt
 
