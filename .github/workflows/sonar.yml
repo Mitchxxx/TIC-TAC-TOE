@@ -7,7 +7,7 @@ on:
 
 
 jobs:
-  build-analyse-scan:
+  build-analyze-scan:
     name: Build, Analyse, Scan
     runs-on: [Eks githubactions-eks]
     steps:
