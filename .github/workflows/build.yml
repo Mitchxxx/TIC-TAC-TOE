@@ -44,11 +44,11 @@ jobs:
     needs: build-analyze-scan
     runs-on: [Eks githubactions-eks]
     steps:
-      - name: docker pull image
-        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
+      # - name: docker pull image
+      #   run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
 
-      - name: Deploy to container
-        run: docker run -d --name game -p 3000:3000 ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
+      # - name: Deploy to container
+      #   run: docker run -d --name game -p 3000:3000 ${{ secrets.DOCKERHUB_USERNAME }}/tic-tac-toe:latest
 
       - name: Update Kubeconfig
         run: aws eks --region eu-west-1 update-kubeconfig --name EKS_CLOUD
